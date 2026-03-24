@@ -1,0 +1,61 @@
+#lang racket
+
+; Crea una fila de N celdas inicializadas en 0
+(define (crear-fila n)
+  (if (= n 0)
+      '()
+      (cons 0 (crear-fila (- n 1)))))
+
+
+; Crea un tablero vacío de M filas y N columnas
+(define (crear-tablero m n)
+  (if (= m 0)
+      '()
+      (cons (crear-fila n)
+            (crear-tablero (- m 1) n))))
+
+
+
+; Verifica si todos los elementos de una fila son 0
+(define (fila-vacia? fila)
+  (if (null? fila)
+      #t
+      (if (= (car fila) 0)
+          (fila-vacia? (cdr fila))
+          #f)))
+
+
+; Verifica si el tablero está completamente vacío
+(define (tablero-vacio? tablero)
+  (if (null? tablero)
+      #t
+      (if (fila-vacia? (car tablero))
+          (tablero-vacio? (cdr tablero))
+          #f)))
+
+
+; Obtiene los índices de columna vacíos en una fila
+(define (posiciones-vacias-en-fila fila num-fila col)
+  (if (null? fila)
+      '()
+      (if (= (car fila) 0)
+          (cons (list num-fila col)
+                (posiciones-vacias-en-fila (cdr fila) num-fila (+ col 1)))
+          (posiciones-vacias-en-fila (cdr fila) num-fila (+ col 1)))))
+
+
+; Función auxiliar recursiva para recorrer el tablero
+(define (posiciones-vacias-helper tablero num-fila)
+  (if (null? tablero)
+      '()
+      (append
+       (posiciones-vacias-en-fila (car tablero) num-fila 0)
+       (posiciones-vacias-helper (cdr tablero) (+ num-fila 1)))))
+
+
+; Obtiene todas las posiciones vacías del tablero
+(define (posiciones-vacias tablero)
+  (posiciones-vacias-helper tablero 0))
+
+
+
