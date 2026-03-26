@@ -111,7 +111,7 @@
                         valor))
 
 
-; Propósito: Crea el tablero de inicio del juego completo:
+; Crea el tablero de inicio del juego completo:
 ; tablero MxN vacío con dos baldosas de valor 2
 ; en posiciones aleatorias distintas
 (define (generar-tablero-inicial m n)
@@ -119,4 +119,82 @@
    (insertar-valor-aleatorio (crear-tablero m n) 2)
    2))
 
+; ============================================================
+; Elimina todos los ceros de una fila,
+; compactando los valores hacia la izquierda
+(define (eliminar-ceros fila)
+  (if (null? fila)
+      '()
+      (if (= (car fila) 0)
+          (eliminar-ceros (cdr fila))
+          (cons (car fila)
+                (eliminar-ceros (cdr fila))))))
+ 
+
+; Combina pares adyacentes iguales en una fila
+; ya sin ceros. Cuando dos valores iguales se
+; encuentran, se fusionan en su suma y el resultado
+; NO puede combinarse de nuevo (se salta con cddr).
+(define (combinar fila)
+  (if (null? fila)
+      '()
+      (if (null? (cdr fila))
+          fila
+          (if (= (car fila) (cadr fila))
+              (cons (* 2 (car fila))
+                    (combinar (cddr fila)))
+              (cons (car fila)
+                    (combinar (cdr fila)))))))
+ 
+ 
+; Agrega ceros al final de una fila hasta que
+; alcance el largo original n
+(define (rellenar-ceros fila n)
+  (if (= (length fila) n)
+      fila
+      (rellenar-ceros (append fila '(0)) n)))
+ 
+ 
+; Aplica los 3 pasos del movimiento izquierda
+; a una sola fila del tablero
+(define (mover-fila-izquierda fila)
+  (rellenar-ceros
+   (combinar
+    (eliminar-ceros fila))
+   (length fila)))
+ 
+ 
+; Aplica el movimiento izquierda a todo el tablero
+; procesando cada fila de forma recursiva
+(define (mover-izquierda tablero)
+  (if (null? tablero)
+      '()
+      (cons (mover-fila-izquierda (car tablero))
+            (mover-izquierda (cdr tablero)))))
+ 
+ 
+; ============================================================
+; Calcula los puntos ganados al combinar una fila.
+; Detecta los mismos pares que detectaría combinar,
+; por eso también trabaja sobre la fila sin ceros.
+(define (calcular-puntaje-fila fila)
+  (if (null? fila)
+      0
+      (if (null? (cdr fila))
+          0
+          (if (= (car fila) (cadr fila))
+              (+ (* 2 (car fila))
+                 (calcular-puntaje-fila (cddr fila)))
+              (calcular-puntaje-fila (cdr fila))))))
+ 
+ 
+; Calcula el puntaje total ganado en un movimiento
+; sumando los puntos de todas las filas del tablero
+(define (calcular-puntaje tablero)
+  (if (null? tablero)
+      0
+      (+ (calcular-puntaje-fila (eliminar-ceros (car tablero)))
+         (calcular-puntaje (cdr tablero)))))
+ 
+ 
 
