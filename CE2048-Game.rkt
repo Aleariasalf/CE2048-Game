@@ -57,5 +57,66 @@
 (define (posiciones-vacias tablero)
   (posiciones-vacias-helper tablero 0))
 
+; ============================================================
+
+; Obtiene el valor de una celda en (fila, col)
+(define (obtener-celda tablero fila col)
+  (list-ref (list-ref tablero fila) col))
+
+
+; Reemplaza el valor en la posición col de una fila
+(define (establecer-en-fila fila col valor)
+  (if (= col 0)
+      (cons valor (cdr fila))
+      (cons (car fila)
+            (establecer-en-fila (cdr fila) (- col 1) valor))))
+
+
+; Devuelve un nuevo tablero con una celda actualizada
+(define (establecer-celda tablero fila col valor)
+  (if (= fila 0)
+      (cons (establecer-en-fila (car tablero) col valor)
+            (cdr tablero))
+      (cons (car tablero)
+            (establecer-celda (cdr tablero) (- fila 1) col valor))))
+
+; ============================================================
+
+; Genera aleatoriamente un valor 2 o 4
+(define (generar-valor-nuevo)
+  (if (< (random 10) 9)
+      2
+      4))
+ 
+ 
+; Selecciona una posición al azar de una lista
+(define (posicion-aleatoria posiciones)
+  (list-ref posiciones (random (length posiciones))))
+ 
+ 
+; Función auxiliar que inserta un valor en una
+(define (insertar-en-posicion tablero posicion valor)
+  (establecer-celda tablero
+                    (car posicion)
+                    (cadr posicion)
+                    valor))
+ 
+ 
+; Inserta un valor en una posición vacía aleatoria
+; del tablero. Usado tanto al inicio del juego como
+; después de cada movimiento del jugador.
+(define (insertar-valor-aleatorio tablero valor)
+  (insertar-en-posicion tablero
+                        (posicion-aleatoria (posiciones-vacias tablero))
+                        valor))
+
+
+; Propósito: Crea el tablero de inicio del juego completo:
+; tablero MxN vacío con dos baldosas de valor 2
+; en posiciones aleatorias distintas
+(define (generar-tablero-inicial m n)
+  (insertar-valor-aleatorio
+   (insertar-valor-aleatorio (crear-tablero m n) 2)
+   2))
 
 
