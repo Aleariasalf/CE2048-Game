@@ -197,4 +197,121 @@
          (calcular-puntaje (cdr tablero)))))
  
  
+ ; ============================================================
+
+;movimiento a la derecha
+; Reutiliza izquierda invirtiendo la fila
+(define (invertir fila)
+  (if (null? fila)
+      '()
+      (append (invertir (cdr fila)) (list (car fila)))))
+
+(define (invertir-tablero tablero)
+  (if (null? tablero)
+      '()
+      (cons (invertir (car tablero))
+            (invertir-tablero (cdr tablero)))))
+
+(define (mover-derecha tablero)
+  (invertir-tablero
+   (mover-izquierda
+    (invertir-tablero tablero))))
+
+; ============================================================
+
+; transpose, convierte filas en columnas
+
+(define (primeros tablero)
+  (if (null? tablero)
+      '()
+      (cons (car (car tablero))
+            (primeros (cdr tablero)))))
+
+(define (restos tablero)
+  (if (null? tablero)
+      '()
+      (cons (cdr (car tablero))
+            (restos (cdr tablero)))))
+
+(define (transpose tablero)
+  (if (null? (car tablero))
+      '()
+      (cons (primeros tablero)
+            (transpose (restos tablero)))))
+
+;Arriba y abajo
+; Se reutiliza izquierda y derecha usando transpose
+(define (mover-arriba tablero)
+  (transpose
+   (mover-izquierda
+    (transpose tablero))))
+
+(define (mover-abajo tablero)
+  (transpose
+   (mover-derecha
+    (transpose tablero))))
+
+; nueva baldosa 
+; Se agrega después de cada movimiento válido
+(define (agregar-nueva-baldosa tablero)
+  (if (null? (posiciones-vacias tablero))
+      tablero
+      (insertar-valor-aleatorio tablero
+                                (generar-valor-nuevo))))
+
+; ============================================================
+
+; validaciones
+
+; Verifica si existe 2048
+(define (existe-2048-fila fila)
+  (cond
+    [(null? fila) #f]
+    [(= (car fila) 2048) #t]
+    [else (existe-2048-fila (cdr fila))]))
+
+(define (gano? tablero)
+  (cond
+    [(null? tablero) #f]
+    [(existe-2048-fila (car tablero)) #t]
+    [else (gano? (cdr tablero))]))
+
+; Verifica si hay movimientos posibles
+(define (puede-combinar fila)
+  (cond
+    [(null? fila) #f]
+    [(null? (cdr fila)) #f]
+    [(= (car fila) (cadr fila)) #t]
+    [else (puede-combinar (cdr fila))]))
+
+(define (existe-combinacion tablero)
+  (cond
+    [(null? tablero) #f]
+    [(puede-combinar (car tablero)) #t]
+    [else (existe-combinacion (cdr tablero))]))
+
+(define (hay-movimientos? tablero)
+  (or (not (null? (posiciones-vacias tablero)))
+      (existe-combinacion tablero)
+      (existe-combinacion (transpose tablero))))
+
+(define (perdio? tablero)
+  (not (hay-movimientos? tablero)))
+
+; ============================================================
+
+; Función principal que ejecuta un movimiento
+(define (ejecutar-movimiento tablero direccion)
+  (let ((nuevo-tablero
+         (cond
+           [(equal? direccion 'izquierda) (mover-izquierda tablero)]
+           [(equal? direccion 'derecha) (mover-derecha tablero)]
+           [(equal? direccion 'arriba) (mover-arriba tablero)]
+           [(equal? direccion 'abajo) (mover-abajo tablero)]
+           [else tablero])))
+    
+    ; Solo agrega baldosa si hubo cambio
+    (if (equal? nuevo-tablero tablero)
+        tablero
+        (agregar-nueva-baldosa nuevo-tablero))))
 
