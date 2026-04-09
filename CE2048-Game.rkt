@@ -1,4 +1,5 @@
 #lang racket
+(provide (all-defined-out))
 
 ; Crea una fila de N celdas inicializadas en 0
 (define (crear-fila n)
